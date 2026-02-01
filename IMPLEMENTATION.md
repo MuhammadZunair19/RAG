@@ -5,11 +5,10 @@ Implementation follows the README spec module by module.
 ## Quick start
 
 1. **Backend** (from project root):
-   - Copy `.env.example` to `.env` and set `SECRET_KEY`, `OPENAI_API_KEY` (optional for local embeddings).
+   - Copy `.env.example` to `.env` and set `SECRET_KEY`.
+   - Install **Ollama** from https://ollama.com, then run: `ollama run llama3.2` (or set `OLLAMA_MODEL` in `.env`).
    - `cd backend && pip install -r requirements.txt`
-   - Ensure `data/` exists (e.g. `mkdir data`).
-   - `alembic upgrade head` (from `backend/`).
-   - `python run.py` (or `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`).
+   - Ensure `data/` exists. `alembic upgrade head` (from `backend/`), then `python run.py`.
 
 2. **Frontend**:
    - `cd frontend && npm install && npm run dev` (runs on port 3000, proxies `/api` to backend).
@@ -43,7 +42,7 @@ Implementation follows the README spec module by module.
 
 - **PDF**: `app/services/pdf_extractor.py` (PyPDF2, text per page)
 - **Chunking**: `app/services/chunker.py` (LangChain RecursiveCharacterTextSplitter, ~1000 chars)
-- **Embeddings**: `app/services/embeddings.py` (OpenAI if key set, else sentence-transformers)
+- **Embeddings**: `app/services/embeddings.py` (local sentence-transformers only)
 - **Vector store**: `app/services/vector_store.py` (ChromaDB persistent at `data/chroma`)
 - **Ingestion**: `app/services/ingestion.py` (orchestrate extract → chunk → embed → Chroma + DB metadata)
 - **API**: `POST /api/v1/documents/upload` (admin, PDF), `GET /api/v1/documents/` (admin)
@@ -51,11 +50,11 @@ Implementation follows the README spec module by module.
 
 ## Module 5: RAG & Chat API ✅
 
-- **RAG**: `app/services/rag.py` (embed query → similarity_search → prompt → OpenAI gpt-4o-mini)
+- **RAG**: `app/services/rag.py` (embed query → similarity_search → prompt → **local Ollama**)
 - **Prompt**: Answer only from context; "I don't know based on the provided documents." if not found
 - **API**: `POST /api/v1/chat/` (body: `{ "question" }`, auth required) → `{ "response", "sources" }`
 - **History**: `GET /api/v1/chat/history?limit=50` (auth required)
-- **Schemas**: `app/schemas/chat.py`. Requires `OPENAI_API_KEY` for LLM.
+- **Schemas**: `app/schemas/chat.py`. Requires **Ollama** running (e.g. `ollama run llama3.2`).
 
 ## Module 6: Frontend ✅
 
